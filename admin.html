@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>অ্যাডমিন প্যানেল</title><link rel="stylesheet" href="css/style.css"></head>
+<body>
+<header class="admin-header"><div class="wrap header-row"><div><b>🏫 বিদ্যালয় অ্যাডমিন প্যানেল</b><small id="adminEmail"></small></div><div><a class="btn small" href="index.html">সাইট দেখুন</a> <button class="btn small danger" id="logout">লগআউট</button></div></div></header>
+<main class="wrap admin-grid">
+<section class="card">
+<div class="section-head"><h1 id="formTitle">নতুন নোটিশ প্রকাশ</h1><button id="cancelEdit" class="outline hidden">বাতিল</button></div>
+<form id="noticeForm">
+<label>নোটিশের শিরোনাম<input id="title" maxlength="150" required placeholder="যেমন: বার্ষিক পরীক্ষার সময়সূচি"></label>
+<div class="two"><label>তারিখ<input id="noticeDate" type="date" required></label><label>ক্যাটাগরি<select id="category"><option>সাধারণ</option><option>পরীক্ষা</option><option>ছুটি</option><option>অভিভাবক</option><option>ভর্তি</option><option>জরুরি</option></select></label></div>
+<label>বিস্তারিত<textarea id="body" rows="8" maxlength="10000" required placeholder="নোটিশের বিস্তারিত লিখুন..."></textarea></label>
+<label>PDF/ফাইল (ঐচ্ছিক)<input id="attachment" type="file" accept=".pdf,image/*"></label>
+<label class="check"><input id="pinned" type="checkbox"> গুরুত্বপূর্ণ নোটিশ হিসেবে উপরে রাখুন</label>
+<button class="btn" type="submit" id="saveBtn">নোটিশ প্রকাশ করুন</button><div id="status" class="status"></div>
+</form></section>
+
+<section class="card">
+<div class="section-head"><h2>প্রকাশিত/সংরক্ষিত নোটিশ</h2><span id="count"></span></div>
+<div id="adminList" class="admin-list"><div class="loading">লোড হচ্ছে...</div></div>
+</section>
+</main>
+<script type="module" src="js/admin.js"></script></body></html>
