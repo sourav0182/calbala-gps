@@ -23,11 +23,11 @@ onAuthStateChanged(auth, async user => {
         "এই অ্যাকাউন্টের Admin অনুমতি নেই।";
     }
   } catch (error) {
-    console.error(error);
-    await signOut(auth);
-    document.getElementById("error").textContent =
-      "Admin যাচাই করা যাচ্ছে না।";
-  }
+  console.error(error);
+  await signOut(auth);
+  document.getElementById("error").textContent =
+    "Admin যাচাই Error: " + error.code + " — " + error.message;
+}
 });
 
 document.getElementById("loginForm").addEventListener("submit", async e => {
