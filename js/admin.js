@@ -100,7 +100,11 @@ async function editNotice(id){
   if(!snap.exists()) return;
   const n = snap.data();
   editingId=id; oldFilePath=n.filePath||"";
-  title.value=n.title||""; noticeDate.value=n.noticeDate||""; category.value=n.category||"সাধারণ"; body.value=n.body||""; pinned.checked=!!n.pinned;
+  document.getElementById("title").value = n.title || "";
+document.getElementById("noticeDate").value = n.noticeDate || "";
+document.getElementById("category").value = n.category || "সাধারণ";
+document.getElementById("body").value = n.body || "";
+document.getElementById("pinned").checked = !!n.pinned;
   document.getElementById("formTitle").textContent="নোটিশ সম্পাদনা";
   document.getElementById("saveBtn").textContent="পরিবর্তন সংরক্ষণ";
   document.getElementById("cancelEdit").classList.remove("hidden");
