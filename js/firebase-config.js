@@ -1,5 +1,5 @@
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyBBMhUHQf14dMxVq0Gf1_0TU5EL9J7LAro",
   authDomain: "calbala-gps.firebaseapp.com",
   projectId: "calbala-gps",
