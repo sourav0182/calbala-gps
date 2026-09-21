@@ -1,16 +1,53 @@
-import { auth, signInWithEmailAndPassword, onAuthStateChanged } from "./firebase.js";
+import {
+  auth,
+  db,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  doc,
+  getDoc,
+  signOut
+} from "./firebase.js";
 
-onAuthStateChanged(auth, user => { if(user) location.href="admin.html"; });
+onAuthStateChanged(auth, async user => {
+  if (!user) return;
+
+  try {
+    const adminRef = doc(db, "admins", user.uid);
+    const adminSnap = await getDoc(adminRef);
+
+    if (adminSnap.exists() && adminSnap.data().active === true) {
+      location.href = "admin.html";
+    } else {
+      await signOut(auth);
+      document.getElementById("error").textContent =
+        "এই অ্যাকাউন্টের Admin অনুমতি নেই।";
+    }
+  } catch (error) {
+    console.error(error);
+    await signOut(auth);
+    document.getElementById("error").textContent =
+      "Admin যাচাই করা যাচ্ছে না।";
+  }
+});
 
 document.getElementById("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
+
   const error = document.getElementById("error");
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
+
   error.textContent = "";
+
   try {
-    await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
-    location.href = "admin.html";
+    await signInWithEmailAndPassword(
+      auth,
+      email.value.trim(),
+      password.value
+    );
   } catch (e) {
     console.error(e);
-    error.textContent = "ই-মেইল বা পাসওয়ার্ড সঠিক নয়, অথবা Firebase Authentication চালু করা হয়নি।";
+    error.textContent =
+      "ই-মেইল বা পাসওয়ার্ড সঠিক নয়, অথবা Firebase Authentication চালু করা হয়নি।";
   }
 });
