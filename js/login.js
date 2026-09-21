@@ -46,8 +46,7 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
       password.value
     );
   } catch (e) {
-    console.error(e);
-    error.textContent =
-      "ই-মেইল বা পাসওয়ার্ড সঠিক নয়, অথবা Firebase Authentication চালু করা হয়নি।";
-  }
+  console.error(e);
+  error.textContent = "Firebase Error: " + e.code + " — " + e.message;
+}
 });
