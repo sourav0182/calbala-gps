@@ -7,6 +7,7 @@ import {
   signOut,
   collection,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   doc,
