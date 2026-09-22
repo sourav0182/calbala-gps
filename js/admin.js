@@ -1201,3 +1201,284 @@ function escapeHtml(value = "") {
   );
 
 }
+// ==========================================
+// SCHOOL SETTINGS
+// ==========================================
+
+const settingsForm = document.getElementById("settingsForm");
+const settingsStatus = document.getElementById("settingsStatus");
+const settingsSaveBtn = document.getElementById("settingsSaveBtn");
+
+const schoolNameInput = document.getElementById("schoolName");
+const schoolAddressInput = document.getElementById("schoolAddress");
+const headteacherNameInput = document.getElementById("headteacherName");
+const schoolPhoneInput = document.getElementById("schoolPhone");
+
+const schoolLogoInput = document.getElementById("schoolLogo");
+const headteacherSignatureInput = document.getElementById("headteacherSignature");
+
+const logoPreview = document.getElementById("logoPreview");
+const signaturePreview = document.getElementById("signaturePreview");
+
+let existingSchoolLogo = "";
+let existingHeadteacherSignature = "";
+
+
+// Load School Settings
+async function loadSchoolSettings() {
+  try {
+    const settingsRef = doc(db, "settings", "school");
+    const settingsSnap = await getDoc(settingsRef);
+
+    if (!settingsSnap.exists()) {
+      return;
+    }
+
+    const data = settingsSnap.data();
+
+    schoolNameInput.value = data.schoolName || "";
+    schoolAddressInput.value = data.schoolAddress || "";
+    headteacherNameInput.value = data.headteacherName || "";
+    schoolPhoneInput.value = data.schoolPhone || "";
+
+    existingSchoolLogo = data.schoolLogo || "";
+    existingHeadteacherSignature = data.headteacherSignature || "";
+
+    if (existingSchoolLogo) {
+      logoPreview.innerHTML = `
+        <img
+          src="${escapeHtml(existingSchoolLogo)}"
+          alt="School Logo"
+        >
+      `;
+    }
+
+    if (existingHeadteacherSignature) {
+      signaturePreview.innerHTML = `
+        <img
+          src="${escapeHtml(existingHeadteacherSignature)}"
+          alt="Headteacher Signature"
+        >
+      `;
+    }
+
+  } catch (error) {
+    console.error("Settings load error:", error);
+
+    if (settingsStatus) {
+      settingsStatus.textContent =
+        "❌ Settings লোড করতে সমস্যা হয়েছে।";
+    }
+  }
+}
+
+
+// Logo Preview
+if (schoolLogoInput) {
+  schoolLogoInput.addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      settingsStatus.textContent =
+        "❌ শুধুমাত্র Image file নির্বাচন করুন।";
+      this.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      settingsStatus.textContent =
+        "❌ Logo-এর সাইজ 5MB-এর বেশি হতে পারবে না।";
+      this.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      logoPreview.innerHTML = `
+        <img
+          src="${e.target.result}"
+          alt="Logo Preview"
+        >
+      `;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+
+// Signature Preview
+if (headteacherSignatureInput) {
+  headteacherSignatureInput.addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      settingsStatus.textContent =
+        "❌ শুধুমাত্র Image file নির্বাচন করুন।";
+      this.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      settingsStatus.textContent =
+        "❌ Signature-এর সাইজ 5MB-এর বেশি হতে পারবে না।";
+      this.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      signaturePreview.innerHTML = `
+        <img
+          src="${e.target.result}"
+          alt="Signature Preview"
+        >
+      `;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+
+// Upload Image
+async function uploadSchoolImage(file, path) {
+
+  if (!file) {
+    return null;
+  }
+
+  const fileRef = ref(storage, path);
+
+  await uploadBytes(fileRef, file);
+
+  return await getDownloadURL(fileRef);
+}
+
+
+// Save Settings
+if (settingsForm) {
+
+  settingsForm.addEventListener("submit", async function (e) {
+
+    e.preventDefault();
+
+    if (!auth.currentUser) {
+      settingsStatus.textContent =
+        "❌ Admin login পাওয়া যায়নি।";
+      return;
+    }
+
+    const schoolName = schoolNameInput.value.trim();
+    const schoolAddress = schoolAddressInput.value.trim();
+    const headteacherName = headteacherNameInput.value.trim();
+    const schoolPhone = schoolPhoneInput.value.trim();
+
+    if (!schoolName || !schoolAddress || !headteacherName) {
+      settingsStatus.textContent =
+        "❌ প্রয়োজনীয় তথ্য পূরণ করুন।";
+      return;
+    }
+
+    try {
+
+      settingsSaveBtn.disabled = true;
+      settingsSaveBtn.textContent = "⏳ সংরক্ষণ হচ্ছে...";
+
+      let schoolLogo = existingSchoolLogo;
+      let headteacherSignature = existingHeadteacherSignature;
+
+      // Upload Logo
+      if (schoolLogoInput.files.length > 0) {
+
+        const logoFile = schoolLogoInput.files[0];
+
+        schoolLogo = await uploadSchoolImage(
+          logoFile,
+          `school-settings/${auth.currentUser.uid}/logo`
+        );
+      }
+
+      // Upload Signature
+      if (headteacherSignatureInput.files.length > 0) {
+
+        const signatureFile =
+          headteacherSignatureInput.files[0];
+
+        headteacherSignature = await uploadSchoolImage(
+          signatureFile,
+          `school-settings/${auth.currentUser.uid}/signature`
+        );
+      }
+
+      // Save Firestore
+      await updateDoc(
+        doc(db, "settings", "school"),
+        {
+          schoolName,
+          schoolAddress,
+          headteacherName,
+          schoolPhone,
+          schoolLogo,
+          headteacherSignature,
+          updatedAt: serverTimestamp(),
+          updatedBy: auth.currentUser.uid
+        }
+      ).catch(async () => {
+
+        await addDoc(
+          collection(db, "settings"),
+          {
+            schoolName,
+            schoolAddress,
+            headteacherName,
+            schoolPhone,
+            schoolLogo,
+            headteacherSignature,
+            updatedAt: serverTimestamp(),
+            updatedBy: auth.currentUser.uid
+          }
+        );
+
+      });
+
+      existingSchoolLogo = schoolLogo || "";
+      existingHeadteacherSignature =
+        headteacherSignature || "";
+
+      settingsStatus.textContent =
+        "✅ School Settings সফলভাবে সংরক্ষণ হয়েছে!";
+
+      settingsSaveBtn.textContent =
+        "✅ সংরক্ষণ হয়েছে";
+
+      schoolLogoInput.value = "";
+      headteacherSignatureInput.value = "";
+
+    } catch (error) {
+
+      console.error("Settings save error:", error);
+
+      settingsStatus.textContent =
+        "❌ Settings সংরক্ষণ করতে সমস্যা হয়েছে: " +
+        error.message;
+
+      settingsSaveBtn.textContent =
+        "💾 আবার সংরক্ষণ করুন";
+
+    } finally {
+
+      settingsSaveBtn.disabled = false;
+
+    }
+
+  });
+}
