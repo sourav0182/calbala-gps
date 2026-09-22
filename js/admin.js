@@ -1,5 +1,4 @@
 import {
-  import {
   auth,
   db,
   storage,
