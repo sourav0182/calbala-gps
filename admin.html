@@ -742,23 +742,107 @@
 
       <div id="settings" class="module">
 
-        <div class="card">
+  <div class="card">
+    <h1>⚙️ School Settings</h1>
+    <p class="muted">
+      এখান থেকে স্কুলের তথ্য একবার সংরক্ষণ করলে
+      Result, Marksheet, Salary Slip, Certificate ইত্যাদিতে
+      স্বয়ংক্রিয়ভাবে ব্যবহার করা যাবে।
+    </p>
 
-          <h1>⚙️ School Settings</h1>
+    <form id="settingsForm">
 
-          <p>
-            এখানে স্কুলের নাম, ঠিকানা, লোগো,
-            প্রধান শিক্ষকের নাম ও স্বাক্ষর
-            সেট করা যাবে।
-          </p>
+      <div class="form-grid">
 
-          <button class="btn">
-            শীঘ্রই আসছে
-          </button>
+        <div class="form-group">
+          <label for="schoolName">🏫 স্কুলের নাম *</label>
+          <input
+            type="text"
+            id="schoolName"
+            placeholder="যেমন: কৃষিকা কিন্ডারগার্টেন স্কুল"
+            required
+          >
+        </div>
 
+        <div class="form-group">
+          <label for="schoolAddress">📍 স্কুলের ঠিকানা *</label>
+          <input
+            type="text"
+            id="schoolAddress"
+            placeholder="যেমন: তুষভান্ডার, কালীগঞ্জ, লালমনিরহাট"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="headteacherName">👨‍🏫 প্রধান শিক্ষকের নাম *</label>
+          <input
+            type="text"
+            id="headteacherName"
+            placeholder="প্রধান শিক্ষকের নাম"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="schoolPhone">📞 স্কুলের মোবাইল নম্বর</label>
+          <input
+            type="tel"
+            id="schoolPhone"
+            placeholder="01XXXXXXXXX"
+          >
         </div>
 
       </div>
+
+      <div class="upload-section">
+
+        <div class="upload-box">
+          <label for="schoolLogo">🖼️ স্কুলের লোগো</label>
+
+          <input
+            type="file"
+            id="schoolLogo"
+            accept="image/*"
+          >
+
+          <div id="logoPreview" class="image-preview">
+            <span>লোগো Preview</span>
+          </div>
+        </div>
+
+        <div class="upload-box">
+          <label for="headteacherSignature">
+            ✍️ প্রধান শিক্ষকের স্বাক্ষর
+          </label>
+
+          <input
+            type="file"
+            id="headteacherSignature"
+            accept="image/*"
+          >
+
+          <div id="signaturePreview" class="image-preview">
+            <span>স্বাক্ষর Preview</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="settingsStatus" class="status"></div>
+
+      <button
+        type="submit"
+        class="btn"
+        id="settingsSaveBtn"
+      >
+        💾 Settings সংরক্ষণ করুন
+      </button>
+
+    </form>
+  </div>
+
+</div>
 
 
     </section>
