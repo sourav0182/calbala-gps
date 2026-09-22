@@ -1,6 +1,8 @@
 import {
+  import {
   auth,
   db,
+  storage,
   onAuthStateChanged,
   signOut,
   collection,
@@ -12,9 +14,11 @@ import {
   onSnapshot,
   query,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  ref,
+  uploadBytes,
+  getDownloadURL
 } from "./firebase.js";
-
 let currentUser = null;
 let editingId = null;
 
