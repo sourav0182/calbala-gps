@@ -18,10 +18,23 @@ import {
 let currentUser = null;
 let editingId = null;
 
+/* =========================
+   ELEMENTS
+========================= */
+
 const form = document.getElementById("noticeForm");
 const statusBox = document.getElementById("status");
 
+const studentForm = document.getElementById("studentForm");
+const studentStatus = document.getElementById("studentStatus");
+
+
+/* =========================
+   ADMIN AUTHENTICATION
+========================= */
+
 onAuthStateChanged(auth, async user => {
+
   if (!user) {
     location.href = "login.html";
     return;
@@ -29,72 +42,197 @@ onAuthStateChanged(auth, async user => {
 
   currentUser = user;
 
-  document.getElementById("adminEmail").textContent = user.email;
+  document.getElementById("adminEmail").textContent =
+    user.email || "";
 
   try {
-    const adminDoc = await getDoc(doc(db, "admins", user.uid));
 
-    if (!adminDoc.exists() || adminDoc.data().active !== true) {
+    const adminDoc = await getDoc(
+      doc(db, "admins", user.uid)
+    );
+
+    if (
+      !adminDoc.exists() ||
+      adminDoc.data().active !== true
+    ) {
+
       await signOut(auth);
+
       alert("এই অ্যাকাউন্টের অ্যাডমিন অনুমতি নেই।");
+
       location.href = "login.html";
+
       return;
     }
 
+    /* Load all data */
+
     loadAdminNotices();
+    loadStudents();
+    loadDashboardCounts();
 
   } catch (error) {
+
     console.error(error);
-    alert("Admin যাচাই করা যাচ্ছে না: " + error.message);
+
+    alert(
+      "Admin যাচাই করা যাচ্ছে না: " +
+      error.message
+    );
+
     await signOut(auth);
+
     location.href = "login.html";
   }
+
 });
 
 
+/* =========================
+   LOGOUT
+========================= */
+
 document.getElementById("logout").onclick = () => {
+
   signOut(auth);
+
 };
 
 
-document.getElementById("cancelEdit").onclick = resetForm;
+/* =========================
+   SIDEBAR NAVIGATION
+========================= */
+
+document
+  .querySelectorAll("[data-module]")
+  .forEach(button => {
+
+    button.onclick = () => {
+
+      const moduleId =
+        button.dataset.module;
+
+      /* Hide all modules */
+
+      document
+        .querySelectorAll(".module")
+        .forEach(module => {
+
+          module.classList.remove("active");
+
+        });
+
+
+      /* Show selected module */
+
+      const selected =
+        document.getElementById(moduleId);
+
+      if (selected) {
+        selected.classList.add("active");
+      }
+
+
+      /* Active button */
+
+      document
+        .querySelectorAll("[data-module]")
+        .forEach(btn => {
+
+          btn.classList.remove("active");
+
+          btn.classList.remove("btn");
+
+          btn.classList.add("outline");
+
+        });
+
+
+      button.classList.remove("outline");
+      button.classList.add("btn");
+      button.classList.add("active");
+
+    };
+
+  });
+
+
+
+/* =========================
+   NOTICE SYSTEM
+========================= */
+
+document.getElementById("cancelEdit").onclick =
+  resetForm;
 
 
 form.addEventListener("submit", async e => {
+
   e.preventDefault();
 
   statusBox.textContent = "";
 
-  const title = document.getElementById("title").value.trim();
-  const noticeDate = document.getElementById("noticeDate").value;
-  const category = document.getElementById("category").value;
-  const body = document.getElementById("body").value.trim();
-  const pinned = document.getElementById("pinned").checked;
+  const title =
+    document.getElementById("title").value.trim();
+
+  const noticeDate =
+    document.getElementById("noticeDate").value;
+
+  const category =
+    document.getElementById("category").value;
+
+  const body =
+    document.getElementById("body").value.trim();
+
+  const pinned =
+    document.getElementById("pinned").checked;
+
 
   if (!title || !noticeDate || !body) {
-    statusBox.textContent = "শিরোনাম, তারিখ ও নোটিশের বিবরণ পূরণ করুন।";
+
+    statusBox.textContent =
+      "শিরোনাম, তারিখ ও নোটিশের বিবরণ পূরণ করুন।";
+
     return;
   }
 
+
   if (!currentUser) {
-    statusBox.textContent = "Admin লগইন পাওয়া যাচ্ছে না।";
+
+    statusBox.textContent =
+      "Admin লগইন পাওয়া যাচ্ছে না।";
+
     return;
   }
+
 
   try {
 
-    document.getElementById("saveBtn").disabled = true;
-    statusBox.textContent = "সংরক্ষণ হচ্ছে...";
+    document.getElementById("saveBtn").disabled =
+      true;
+
+    statusBox.textContent =
+      "সংরক্ষণ হচ্ছে...";
+
 
     const data = {
+
       title: title,
+
       noticeDate: noticeDate,
+
       category: category,
+
       body: body,
+
       pinned: pinned,
+
       published: true,
+
       updatedAt: serverTimestamp()
+
     };
+
 
     if (editingId) {
 
@@ -103,7 +241,8 @@ form.addEventListener("submit", async e => {
         data
       );
 
-      statusBox.textContent = "নোটিশ সফলভাবে আপডেট হয়েছে।";
+      statusBox.textContent =
+        "নোটিশ সফলভাবে আপডেট হয়েছে.";
 
     } else {
 
@@ -111,13 +250,20 @@ form.addEventListener("submit", async e => {
         collection(db, "notices"),
         {
           ...data,
-          createdAt: serverTimestamp(),
-          authorUid: currentUser.uid
+
+          createdAt:
+            serverTimestamp(),
+
+          authorUid:
+            currentUser.uid
         }
       );
 
-      statusBox.textContent = "নোটিশ সফলভাবে প্রকাশ হয়েছে।";
+      statusBox.textContent =
+        "নোটিশ সফলভাবে প্রকাশ হয়েছে.";
+
     }
+
 
     resetForm();
 
@@ -126,15 +272,23 @@ form.addEventListener("submit", async e => {
     console.error(error);
 
     statusBox.textContent =
-      "সমস্যা: " + (error.message || "নোটিশ সংরক্ষণ করা যায়নি");
+      "সমস্যা: " +
+      (error.message ||
+        "নোটিশ সংরক্ষণ করা যায়নি");
 
   } finally {
 
-    document.getElementById("saveBtn").disabled = false;
+    document.getElementById("saveBtn").disabled =
+      false;
 
   }
+
 });
 
+
+/* =========================
+   LOAD NOTICES
+========================= */
 
 function loadAdminNotices() {
 
@@ -143,19 +297,41 @@ function loadAdminNotices() {
     orderBy("noticeDate", "desc")
   );
 
+
   onSnapshot(
     q,
+
     snap => {
 
-      const data = snap.docs.map(x => ({
-        id: x.id,
-        ...x.data()
-      }));
+      const data =
+        snap.docs.map(x => ({
+
+          id: x.id,
+
+          ...x.data()
+
+        }));
+
 
       document.getElementById("count").textContent =
         `${data.length}টি`;
 
+
+      /* Dashboard notice count */
+
+      const noticeCount =
+        document.getElementById("noticeCount");
+
+      if (noticeCount) {
+
+        noticeCount.textContent =
+          data.length;
+
+      }
+
+
       document.getElementById("adminList").innerHTML =
+
         data.length
 
           ? data.map(n => `
@@ -165,39 +341,62 @@ function loadAdminNotices() {
               <div>
 
                 <span class="tag ${n.published ? "" : "off"}">
-                  ${n.published ? "প্রকাশিত" : "বন্ধ"}
+
+                  ${n.published
+                    ? "প্রকাশিত"
+                    : "বন্ধ"}
+
                 </span>
 
                 ${n.pinned ? " 📌" : ""}
 
-                <h3>${escapeHtml(n.title)}</h3>
+                <h3>
+                  ${escapeHtml(n.title)}
+                </h3>
 
                 <small>
+
                   ${formatDate(n.noticeDate)}
+
                   •
-                  ${escapeHtml(n.category || "সাধারণ")}
+
+                  ${escapeHtml(
+                    n.category || "সাধারণ"
+                  )}
+
                 </small>
 
               </div>
+
 
               <div class="actions">
 
                 <button
                   class="outline"
                   data-edit="${n.id}">
+
                   এডিট
+
                 </button>
+
 
                 <button
                   class="outline"
                   data-toggle="${n.id}">
-                  ${n.published ? "লুকান" : "প্রকাশ করুন"}
+
+                  ${n.published
+                    ? "লুকান"
+                    : "প্রকাশ করুন"}
+
                 </button>
+
 
                 <button
                   class="outline danger-text"
                   data-delete="${n.id}">
+
                   মুছুন
+
                 </button>
 
               </div>
@@ -212,42 +411,62 @@ function loadAdminNotices() {
       document
         .querySelectorAll("[data-edit]")
         .forEach(button => {
+
           button.onclick = () =>
-            editNotice(button.dataset.edit);
+            editNotice(
+              button.dataset.edit
+            );
+
         });
 
 
       document
         .querySelectorAll("[data-toggle]")
         .forEach(button => {
+
           button.onclick = () =>
-            toggleNotice(button.dataset.toggle);
+            toggleNotice(
+              button.dataset.toggle
+            );
+
         });
 
 
       document
         .querySelectorAll("[data-delete]")
         .forEach(button => {
+
           button.onclick = () =>
-            removeNotice(button.dataset.delete);
+            removeNotice(
+              button.dataset.delete
+            );
+
         });
 
     },
+
 
     error => {
 
       console.error(error);
 
       document.getElementById("adminList").innerHTML =
+
         `<p>
           নোটিশ লোড করা যাচ্ছে না।
           ${escapeHtml(error.message)}
         </p>`;
 
     }
+
   );
+
 }
 
+
+/* =========================
+   EDIT NOTICE
+========================= */
 
 async function editNotice(id) {
 
@@ -255,44 +474,64 @@ async function editNotice(id) {
     doc(db, "notices", id)
   );
 
+
   if (!snap.exists()) return;
+
 
   const n = snap.data();
 
   editingId = id;
 
+
   document.getElementById("title").value =
     n.title || "";
+
 
   document.getElementById("noticeDate").value =
     n.noticeDate || "";
 
+
   document.getElementById("category").value =
     n.category || "সাধারণ";
+
 
   document.getElementById("body").value =
     n.body || "";
 
+
   document.getElementById("pinned").checked =
     !!n.pinned;
+
 
   document.getElementById("formTitle").textContent =
     "নোটিশ সম্পাদনা";
 
+
   document.getElementById("saveBtn").textContent =
     "পরিবর্তন সংরক্ষণ";
+
 
   document
     .getElementById("cancelEdit")
     .classList
     .remove("hidden");
 
+
+  /* Open notice module */
+
+  showModule("notices");
+
   window.scrollTo({
     top: 0,
     behavior: "smooth"
   });
+
 }
 
+
+/* =========================
+   TOGGLE NOTICE
+========================= */
 
 async function toggleNotice(id) {
 
@@ -300,17 +539,29 @@ async function toggleNotice(id) {
     doc(db, "notices", id)
   );
 
+
   if (!snap.exists()) return;
+
 
   await updateDoc(
     doc(db, "notices", id),
     {
-      published: !snap.data().published,
-      updatedAt: serverTimestamp()
+
+      published:
+        !snap.data().published,
+
+      updatedAt:
+        serverTimestamp()
+
     }
   );
+
 }
 
+
+/* =========================
+   DELETE NOTICE
+========================= */
 
 async function removeNotice(id) {
 
@@ -319,14 +570,22 @@ async function removeNotice(id) {
       "এই নোটিশটি স্থায়ীভাবে মুছে ফেলবেন?"
     )
   ) {
+
     return;
+
   }
+
 
   await deleteDoc(
     doc(db, "notices", id)
   );
+
 }
 
+
+/* =========================
+   RESET NOTICE FORM
+========================= */
 
 function resetForm() {
 
@@ -334,40 +593,606 @@ function resetForm() {
 
   form.reset();
 
+
   document.getElementById("formTitle").textContent =
     "নতুন নোটিশ প্রকাশ";
 
+
   document.getElementById("saveBtn").textContent =
     "নোটিশ প্রকাশ করুন";
+
 
   document
     .getElementById("cancelEdit")
     .classList
     .add("hidden");
+
 }
 
+
+/* =========================
+   STUDENT SYSTEM
+========================= */
+
+studentForm.addEventListener(
+  "submit",
+  async e => {
+
+    e.preventDefault();
+
+    studentStatus.textContent = "";
+
+
+    const name =
+      document
+        .getElementById("studentName")
+        .value
+        .trim();
+
+
+    const roll =
+      document
+        .getElementById("studentRoll")
+        .value
+        .trim();
+
+
+    const className =
+      document
+        .getElementById("studentClass")
+        .value;
+
+
+    const section =
+      document
+        .getElementById("studentSection")
+        .value
+        .trim();
+
+
+    const fatherName =
+      document
+        .getElementById("fatherName")
+        .value
+        .trim();
+
+
+    const motherName =
+      document
+        .getElementById("motherName")
+        .value
+        .trim();
+
+
+    const dateOfBirth =
+      document
+        .getElementById("dateOfBirth")
+        .value;
+
+
+    const mobile =
+      document
+        .getElementById("studentMobile")
+        .value
+        .trim();
+
+
+    const address =
+      document
+        .getElementById("studentAddress")
+        .value
+        .trim();
+
+
+    if (!name || !roll) {
+
+      studentStatus.textContent =
+        "শিক্ষার্থীর নাম ও রোল অবশ্যই দিতে হবে।";
+
+      return;
+
+    }
+
+
+    try {
+
+      document.getElementById(
+        "studentSaveBtn"
+      ).disabled = true;
+
+
+      studentStatus.textContent =
+        "শিক্ষার্থীর তথ্য সংরক্ষণ হচ্ছে...";
+
+
+      await addDoc(
+        collection(db, "students"),
+        {
+
+          name,
+
+          roll,
+
+          className,
+
+          section,
+
+          fatherName,
+
+          motherName,
+
+          dateOfBirth,
+
+          mobile,
+
+          address,
+
+          createdAt:
+            serverTimestamp(),
+
+          updatedAt:
+            serverTimestamp(),
+
+          createdBy:
+            currentUser.uid
+
+        }
+      );
+
+
+      studentStatus.textContent =
+        "✅ শিক্ষার্থীর তথ্য সফলভাবে সংরক্ষণ হয়েছে।";
+
+
+      studentForm.reset();
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      studentStatus.textContent =
+        "❌ সমস্যা: " +
+        error.message;
+
+    } finally {
+
+      document.getElementById(
+        "studentSaveBtn"
+      ).disabled = false;
+
+    }
+
+  }
+);
+
+
+/* =========================
+   LOAD STUDENTS
+========================= */
+
+function loadStudents() {
+
+  const q = query(
+    collection(db, "students"),
+    orderBy("createdAt", "desc")
+  );
+
+
+  onSnapshot(
+    q,
+
+    snap => {
+
+      const students =
+        snap.docs.map(x => ({
+
+          id: x.id,
+
+          ...x.data()
+
+        }));
+
+
+      document.getElementById(
+        "studentListCount"
+      ).textContent =
+        `${students.length}টি`;
+
+
+      document.getElementById(
+        "studentCount"
+      ).textContent =
+        students.length;
+
+
+      const list =
+        document.getElementById(
+          "studentList"
+        );
+
+
+      if (!students.length) {
+
+        list.innerHTML =
+          "<p>এখনো কোনো শিক্ষার্থী যোগ করা হয়নি।</p>";
+
+        return;
+
+      }
+
+
+      list.innerHTML = `
+
+        <div style="overflow-x:auto">
+
+          <table class="student-table">
+
+            <thead>
+
+              <tr>
+
+                <th>রোল</th>
+
+                <th>নাম</th>
+
+                <th>শ্রেণি</th>
+
+                <th>শাখা</th>
+
+                <th>পিতা</th>
+
+                <th>মোবাইল</th>
+
+                <th>অ্যাকশন</th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              ${students.map(student => `
+
+                <tr>
+
+                  <td>
+                    ${escapeHtml(
+                      String(
+                        student.roll || ""
+                      )
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${escapeHtml(
+                      student.name || ""
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${escapeHtml(
+                      student.className || ""
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${escapeHtml(
+                      student.section || "-"
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${escapeHtml(
+                      student.fatherName || "-"
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${escapeHtml(
+                      student.mobile || "-"
+                    )}
+                  </td>
+
+
+                  <td>
+
+                    <button
+                      class="outline danger-text"
+                      data-student-delete="${student.id}">
+
+                      মুছুন
+
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              `).join("")}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      `;
+
+
+      document
+        .querySelectorAll(
+          "[data-student-delete]"
+        )
+        .forEach(button => {
+
+          button.onclick = () =>
+            deleteStudent(
+              button.dataset.studentDelete
+            );
+
+        });
+
+    },
+
+
+    error => {
+
+      console.error(error);
+
+      document.getElementById(
+        "studentList"
+      ).innerHTML =
+
+        `<p>
+          শিক্ষার্থীর তথ্য লোড করা যাচ্ছে না।
+          ${escapeHtml(error.message)}
+        </p>`;
+
+    }
+
+  );
+
+}
+
+
+/* =========================
+   DELETE STUDENT
+========================= */
+
+async function deleteStudent(id) {
+
+  if (
+    !confirm(
+      "এই শিক্ষার্থীর তথ্য স্থায়ীভাবে মুছে ফেলবেন?"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    await deleteDoc(
+      doc(db, "students", id)
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "শিক্ষার্থী মুছে ফেলা যায়নি: " +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================
+   DASHBOARD COUNTS
+========================= */
+
+function loadDashboardCounts() {
+
+  /* Student count */
+
+  onSnapshot(
+    collection(db, "students"),
+
+    snap => {
+
+      const element =
+        document.getElementById(
+          "studentCount"
+        );
+
+      if (element) {
+
+        element.textContent =
+          snap.size;
+
+      }
+
+    }
+  );
+
+
+  /* Result count */
+
+  onSnapshot(
+    collection(db, "results"),
+
+    snap => {
+
+      const element =
+        document.getElementById(
+          "resultCount"
+        );
+
+      if (element) {
+
+        element.textContent =
+          snap.size;
+
+      }
+
+    }
+  );
+
+
+  /* Salary count */
+
+  onSnapshot(
+    collection(db, "salaryPayments"),
+
+    snap => {
+
+      const element =
+        document.getElementById(
+          "salaryCount"
+        );
+
+      if (element) {
+
+        element.textContent =
+          snap.size;
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================
+   SHOW MODULE
+========================= */
+
+function showModule(moduleId) {
+
+  document
+    .querySelectorAll(".module")
+    .forEach(module => {
+
+      module.classList.remove(
+        "active"
+      );
+
+    });
+
+
+  const selected =
+    document.getElementById(
+      moduleId
+    );
+
+
+  if (selected) {
+
+    selected.classList.add(
+      "active"
+    );
+
+  }
+
+
+  document
+    .querySelectorAll(
+      "[data-module]"
+    )
+    .forEach(btn => {
+
+      btn.classList.remove(
+        "active"
+      );
+
+      btn.classList.remove(
+        "btn"
+      );
+
+      btn.classList.add(
+        "outline"
+      );
+
+    });
+
+
+  const button =
+    document.querySelector(
+      `[data-module="${moduleId}"]`
+    );
+
+
+  if (button) {
+
+    button.classList.remove(
+      "outline"
+    );
+
+    button.classList.add(
+      "btn"
+    );
+
+    button.classList.add(
+      "active"
+    );
+
+  }
+
+}
+
+
+/* =========================
+   DATE FORMAT
+========================= */
 
 function formatDate(value) {
 
   if (!value) return "--";
 
-  const [year, month, day] =
-    value.split("-");
+  const [
+    year,
+    month,
+    day
+  ] = value.split("-");
 
   return `${day}/${month}/${year}`;
+
 }
 
 
+/* =========================
+   HTML SECURITY
+========================= */
+
 function escapeHtml(value = "") {
 
-  return value.replace(
+  return String(value).replace(
     /[&<>"']/g,
     character => ({
+
       "&": "&amp;",
+
       "<": "&lt;",
+
       ">": "&gt;",
+
       '"': "&quot;",
+
       "'": "&#039;"
+
     }[character])
   );
 
