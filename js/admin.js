@@ -1523,3 +1523,106 @@ if (settingsForm) {
 
   });
 }
+// ===============================
+// RESULTS SYSTEM
+// ===============================
+
+const resultStudentSelect =
+  document.getElementById("resultStudent");
+
+const resultClassInput =
+  document.getElementById("resultClass");
+
+const resultSectionInput =
+  document.getElementById("resultSection");
+
+let resultStudents = [];
+
+
+// শিক্ষার্থীদের Result dropdown-এ লোড
+function loadResultStudents() {
+
+  if (!resultStudentSelect) return;
+
+  const studentsQuery = query(
+    collection(db, "students"),
+    orderBy("createdAt", "desc")
+  );
+
+  onSnapshot(
+    studentsQuery,
+    (snapshot) => {
+
+      resultStudents = [];
+
+      resultStudentSelect.innerHTML = `
+        <option value="">
+          -- শিক্ষার্থী নির্বাচন করুন --
+        </option>
+      `;
+
+      snapshot.forEach((docSnap) => {
+
+        const student = {
+          id: docSnap.id,
+          ...docSnap.data()
+        };
+
+        resultStudents.push(student);
+
+        const option = document.createElement("option");
+
+        option.value = student.id;
+
+        option.textContent =
+          `${student.name || "নাম নেই"} — রোল: ${student.roll || "-"}`;
+
+        resultStudentSelect.appendChild(option);
+
+      });
+
+    },
+    (error) => {
+
+      console.error(
+        "Result students load error:",
+        error
+      );
+
+    }
+  );
+}
+
+
+// শিক্ষার্থী নির্বাচন করলে
+// তার শ্রেণি ও শাখা দেখাবে
+if (resultStudentSelect) {
+
+  resultStudentSelect.addEventListener(
+    "change",
+    function () {
+
+      const selectedId = this.value;
+
+      const student = resultStudents.find(
+        (item) => item.id === selectedId
+      );
+
+      if (!student) {
+
+        resultClassInput.value = "";
+        resultSectionInput.value = "";
+
+        return;
+      }
+
+      resultClassInput.value =
+        student.class || "";
+
+      resultSectionInput.value =
+        student.section || "";
+
+    }
+  );
+
+}
