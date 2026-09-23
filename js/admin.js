@@ -73,6 +73,7 @@ onAuthStateChanged(auth, async user => {
 
     loadAdminNotices();
     loadStudents();
+    loadResultStudents();
     loadDashboardCounts();
 
   } catch (error) {
