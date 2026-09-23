@@ -1350,19 +1350,80 @@ if (headteacherSignatureInput) {
 
 
 // Upload Image
-async function uploadSchoolImage(file, path) {
+async function uploadSchoolImage(file) {
 
   if (!file) {
     return null;
   }
 
-  const fileRef = ref(storage, path);
+  return new Promise((resolve, reject) => {
 
-  await uploadBytes(fileRef, file);
+    const reader = new FileReader();
 
-  return await getDownloadURL(fileRef);
+    reader.onload = function (event) {
+
+      const img = new Image();
+
+      img.onload = function () {
+
+        const maxSize = 600;
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxSize || height > maxSize) {
+
+          if (width > height) {
+            height = height * (maxSize / width);
+            width = maxSize;
+          } else {
+            width = width * (maxSize / height);
+            height = maxSize;
+          }
+
+        }
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          width,
+          height
+        );
+
+        const dataURL = canvas.toDataURL(
+          "image/webp",
+          0.7
+        );
+
+        resolve(dataURL);
+      };
+
+      img.onerror = function () {
+        reject(
+          new Error("Image load করা যায়নি।")
+        );
+      };
+
+      img.src = event.target.result;
+    };
+
+    reader.onerror = function () {
+      reject(
+        new Error("Image পড়তে সমস্যা হয়েছে।")
+      );
+    };
+
+    reader.readAsDataURL(file);
+  });
 }
-
 
 // Save Settings
 if (settingsForm) {
