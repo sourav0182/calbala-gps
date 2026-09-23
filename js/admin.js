@@ -1462,10 +1462,7 @@ if (settingsForm) {
 
         const logoFile = schoolLogoInput.files[0];
 
-        schoolLogo = await uploadSchoolImage(
-          logoFile,
-          `school-settings/${auth.currentUser.uid}/logo`
-        );
+        schoolLogo = await uploadSchoolImage(logoFile);
       }
 
       // Upload Signature
@@ -1474,10 +1471,8 @@ if (settingsForm) {
         const signatureFile =
           headteacherSignatureInput.files[0];
 
-        headteacherSignature = await uploadSchoolImage(
-          signatureFile,
-          `school-settings/${auth.currentUser.uid}/signature`
-        );
+        headteacherSignature =
+  await uploadSchoolImage(signatureFile);
       }
 
       // Save Firestore
