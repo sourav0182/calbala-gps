@@ -1813,5 +1813,185 @@ if (resultForm) {
     }
 
   });
+// ===============================
+// GPA CALCULATION
+// ===============================
 
+function getGradeAndGPA(mark) {
+
+  if (mark >= 80) {
+    return {
+      grade: "A+",
+      gpa: 5.00
+    };
+  }
+
+  if (mark >= 70) {
+    return {
+      grade: "A",
+      gpa: 4.00
+    };
+  }
+
+  if (mark >= 60) {
+    return {
+      grade: "A-",
+      gpa: 3.50
+    };
+  }
+
+  if (mark >= 50) {
+    return {
+      grade: "B",
+      gpa: 3.00
+    };
+  }
+
+  if (mark >= 40) {
+    return {
+      grade: "C",
+      gpa: 2.00
+    };
+  }
+
+  if (mark >= 33) {
+    return {
+      grade: "D",
+      gpa: 1.00
+    };
+  }
+
+  return {
+    grade: "F",
+    gpa: 0.00
+  };
+
+}
+
+
+// GPA হিসাব
+function calculateResultGPA() {
+
+  const markInputs =
+    document.querySelectorAll(
+      "#subjectMarks .subject-mark"
+    );
+
+  let total = 0;
+  let gpaTotal = 0;
+  let count = 0;
+
+
+  markInputs.forEach(input => {
+
+    const value =
+      input.value.trim();
+
+
+    if (value !== "") {
+
+      const mark =
+        Number(value);
+
+
+      // 0-100 এর বাইরে হলে বাদ
+      if (
+        mark < 0 ||
+        mark > 100 ||
+        isNaN(mark)
+      ) {
+        return;
+      }
+
+
+      const result =
+        getGradeAndGPA(mark);
+
+
+      total += mark;
+
+      gpaTotal += result.gpa;
+
+      count++;
+
+    }
+
+  });
+
+
+  const average =
+    count > 0
+      ? total / count
+      : 0;
+
+
+  const overallGPA =
+    count > 0
+      ? gpaTotal / count
+      : 0;
+
+
+  const totalElement =
+    document.getElementById(
+      "resultTotal"
+    );
+
+
+  const averageElement =
+    document.getElementById(
+      "resultAverage"
+    );
+
+
+  const gpaElement =
+    document.getElementById(
+      "resultGPA"
+    );
+
+
+  if (totalElement) {
+
+    totalElement.textContent =
+      total;
+
+  }
+
+
+  if (averageElement) {
+
+    averageElement.textContent =
+      average.toFixed(2);
+
+  }
+
+
+  if (gpaElement) {
+
+    gpaElement.textContent =
+      overallGPA.toFixed(2);
+
+  }
+
+}
+
+
+// যেকোনো বিষয়ের নম্বর পরিবর্তন হলেই
+// GPA পুনরায় হিসাব হবে
+
+document.addEventListener(
+  "input",
+  function (event) {
+
+    if (
+      event.target.matches(
+        "#subjectMarks .subject-mark"
+      )
+    ) {
+
+      calculateResultGPA();
+
+    }
+
+  }
+);
 }
