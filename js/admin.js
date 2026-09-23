@@ -1627,3 +1627,191 @@ if (resultStudentSelect) {
   );
 
 }
+// ===============================
+// RESULT SAVE SYSTEM
+// ===============================
+
+const resultForm = document.getElementById("resultForm");
+const examNameInput = document.getElementById("examName");
+const resultSaveBtn = document.getElementById("resultSaveBtn");
+const resultStatus = document.getElementById("resultStatus");
+
+
+if (resultForm) {
+
+  resultForm.addEventListener("submit", async function (e) {
+
+    e.preventDefault();
+
+    try {
+
+      // শিক্ষার্থী নির্বাচন
+      const selectedStudentId =
+        resultStudentSelect.value;
+
+      if (!selectedStudentId) {
+
+        resultStatus.textContent =
+          "❌ আগে একজন শিক্ষার্থী নির্বাচন করুন।";
+
+        return;
+      }
+
+
+      // শিক্ষার্থীর তথ্য
+      const student = resultStudents.find(
+        (item) => item.id === selectedStudentId
+      );
+
+      if (!student) {
+
+        resultStatus.textContent =
+          "❌ শিক্ষার্থীর তথ্য পাওয়া যায়নি।";
+
+        return;
+      }
+
+
+      // পরীক্ষার নাম
+      const examName =
+        examNameInput.value.trim();
+
+
+      // বিষয়গুলোর নম্বর সংগ্রহ
+      const subjectMarks = {};
+
+      const markInputs =
+        document.querySelectorAll(".subject-mark");
+
+
+      let total = 0;
+      let subjectCount = 0;
+
+
+      markInputs.forEach((input) => {
+
+        const subject =
+          input.dataset.subject;
+
+        const value =
+          input.value.trim();
+
+
+        if (value !== "") {
+
+          const mark =
+            Number(value);
+
+          subjectMarks[subject] = mark;
+
+          total += mark;
+
+          subjectCount++;
+
+        } else {
+
+          subjectMarks[subject] = null;
+
+        }
+
+      });
+
+
+      // কোনো নম্বর দেওয়া হয়েছে কি না
+      if (subjectCount === 0) {
+
+        resultStatus.textContent =
+          "❌ অন্তত একটি বিষয়ের নম্বর দিন।";
+
+        return;
+      }
+
+
+      // Average
+      const average =
+        total / subjectCount;
+
+
+      // Save button
+      resultSaveBtn.disabled = true;
+
+      resultSaveBtn.textContent =
+        "⏳ সংরক্ষণ হচ্ছে...";
+
+
+      // Firebase-এ Result Save
+      await addDoc(
+        collection(db, "results"),
+        {
+
+          studentId: selectedStudentId,
+
+          studentName:
+            student.name || "",
+
+          roll:
+            student.roll || "",
+
+          class:
+            student.class || "",
+
+          section:
+            student.section || "",
+
+          examName: examName,
+
+          subjects:
+            subjectMarks,
+
+          total: total,
+
+          subjectCount:
+            subjectCount,
+
+          average:
+            Number(average.toFixed(2)),
+
+          createdAt:
+            serverTimestamp(),
+
+          createdBy:
+            auth.currentUser.uid
+
+        }
+      );
+
+
+      // Success message
+      resultStatus.textContent =
+        "✅ রেজাল্ট সফলভাবে সংরক্ষণ হয়েছে।";
+
+
+      // Form reset
+      resultForm.reset();
+
+      resultClassInput.value = "";
+      resultSectionInput.value = "";
+
+
+    } catch (error) {
+
+      console.error(
+        "Result save error:",
+        error
+      );
+
+      resultStatus.textContent =
+        "❌ রেজাল্ট সংরক্ষণ করতে সমস্যা হয়েছে।";
+
+    } finally {
+
+      resultSaveBtn.disabled = false;
+
+      resultSaveBtn.textContent =
+        "💾 রেজাল্ট সংরক্ষণ করুন";
+
+    }
+
+  });
+
+}
