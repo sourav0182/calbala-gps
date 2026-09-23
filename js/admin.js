@@ -1618,7 +1618,7 @@ if (resultStudentSelect) {
       }
 
       resultClassInput.value =
-        student.class || "";
+        student.className || "";
 
       resultSectionInput.value =
         student.section || "";
@@ -1753,7 +1753,7 @@ if (resultForm) {
             student.roll || "",
 
           class:
-            student.class || "",
+            student.className || "",
 
           section:
             student.section || "",
