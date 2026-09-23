@@ -491,25 +491,172 @@
 
       <!-- RESULTS -->
 
-      <div id="results" class="module">
+<div id="results" class="module">
 
-        <div class="card">
+  <div class="card">
 
-          <h1>📊 রেজাল্ট</h1>
+    <h1>📊 রেজাল্ট / মার্কশিট</h1>
 
-          <p>
-            এখানে শিক্ষার্থীর বিষয়ভিত্তিক নম্বর
-            এন্ট্রি করে সুন্দর PDF Result Sheet
-            তৈরি করা হবে।
-          </p>
+    <p class="muted">
+      শিক্ষার্থীর বিষয়ভিত্তিক নম্বর এখানে এন্ট্রি করে
+      রেজাল্ট সংরক্ষণ ও পরবর্তীতে মার্কশিট তৈরি করা যাবে।
+    </p>
 
-          <button class="btn">
-            শীঘ্রই আসছে
-          </button>
+    <form id="resultForm">
 
+      <div class="two">
+
+        <label>
+          শিক্ষার্থী
+
+          <select id="resultStudent" required>
+            <option value="">-- শিক্ষার্থী নির্বাচন করুন --</option>
+          </select>
+
+        </label>
+
+        <label>
+          পরীক্ষার নাম
+
+          <input
+            type="text"
+            id="examName"
+            placeholder="যেমন: বার্ষিক পরীক্ষা ২০২৬"
+            required
+          >
+
+        </label>
+
+      </div>
+
+      <div class="two">
+
+        <label>
+          শ্রেণি
+
+          <input
+            type="text"
+            id="resultClass"
+            readonly
+          >
+
+        </label>
+
+        <label>
+          শাখা
+
+          <input
+            type="text"
+            id="resultSection"
+            readonly
+          >
+
+        </label>
+
+      </div>
+
+      <h3>📚 বিষয়ভিত্তিক নম্বর</h3>
+
+      <div id="subjectMarks">
+
+        <div class="two">
+          <label>
+            বাংলা
+            <input
+              type="number"
+              class="subject-mark"
+              data-subject="বাংলা"
+              min="0"
+              max="100"
+              placeholder="০-১০০"
+            >
+          </label>
+
+          <label>
+            ইংরেজি
+            <input
+              type="number"
+              class="subject-mark"
+              data-subject="ইংরেজি"
+              min="0"
+              max="100"
+              placeholder="০-১০০"
+            >
+          </label>
+        </div>
+
+        <div class="two">
+          <label>
+            গণিত
+            <input
+              type="number"
+              class="subject-mark"
+              data-subject="গণিত"
+              min="0"
+              max="100"
+              placeholder="০-১০০"
+            >
+          </label>
+
+          <label>
+            বিজ্ঞান
+            <input
+              type="number"
+              class="subject-mark"
+              data-subject="বিজ্ঞান"
+              min="0"
+              max="100"
+              placeholder="০-১০০"
+            >
+          </label>
+        </div>
+
+        <div class="two">
+          <label>
+            বাংলাদেশ ও বিশ্বপরিচয়
+            <input
+              type="number"
+              class="subject-mark"
+              data-subject="বাংলাদেশ ও বিশ্বপরিচয়"
+              min="0"
+              max="100"
+              placeholder="০-১০০"
+            >
+          </label>
+
+          <label>
+            ধর্ম ও নৈতিক শিক্ষা
+            <input
+              type="number"
+              class="subject-mark"
+              data-subject="ধর্ম ও নৈতিক শিক্ষা"
+              min="0"
+              max="100"
+              placeholder="০-১০০"
+            >
+          </label>
         </div>
 
       </div>
+
+      <button
+        type="submit"
+        class="btn"
+        id="resultSaveBtn"
+      >
+        💾 রেজাল্ট সংরক্ষণ করুন
+      </button>
+
+      <div
+        id="resultStatus"
+        class="status">
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
 
 
 
