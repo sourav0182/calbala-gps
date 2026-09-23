@@ -1420,35 +1420,20 @@ if (settingsForm) {
       }
 
       // Save Firestore
-      await updateDoc(
-        doc(db, "settings", "school"),
-        {
-          schoolName,
-          schoolAddress,
-          headteacherName,
-          schoolPhone,
-          schoolLogo,
-          headteacherSignature,
-          updatedAt: serverTimestamp(),
-          updatedBy: auth.currentUser.uid
-        }
-      ).catch(async () => {
-
-        await addDoc(
-          collection(db, "settings"),
-          {
-            schoolName,
-            schoolAddress,
-            headteacherName,
-            schoolPhone,
-            schoolLogo,
-            headteacherSignature,
-            updatedAt: serverTimestamp(),
-            updatedBy: auth.currentUser.uid
-          }
-        );
-
-      });
+      await setDoc(
+  doc(db, "settings", "school"),
+  {
+    schoolName,
+    schoolAddress,
+    headteacherName,
+    schoolPhone,
+    schoolLogo,
+    headteacherSignature,
+    updatedAt: serverTimestamp(),
+    updatedBy: auth.currentUser.uid
+  },
+  { merge: true }
+);
 
       existingSchoolLogo = schoolLogo || "";
       existingHeadteacherSignature =
