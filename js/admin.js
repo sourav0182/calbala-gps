@@ -1730,6 +1730,22 @@ if (resultForm) {
       // Average
       const average =
         total / subjectCount;
+      const overallGPA =
+  subjectCount > 0
+    ? markInputs.reduce((sum, input) => {
+
+        const value = input.value.trim();
+
+        if (value === "") {
+          return sum;
+        }
+
+        const mark = Number(value);
+
+        return sum + getGradeAndGPA(mark).gpa;
+
+      }, 0) / subjectCount
+    : 0;
 
 
       // Save button
@@ -1770,6 +1786,8 @@ if (resultForm) {
 
           average:
             Number(average.toFixed(2)),
+          gpa:
+  Number(overallGPA.toFixed(2)),
 
           createdAt:
             serverTimestamp(),
