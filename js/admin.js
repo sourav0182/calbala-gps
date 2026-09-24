@@ -1732,7 +1732,7 @@ if (resultForm) {
         total / subjectCount;
       const overallGPA =
   subjectCount > 0
-    ? markInputs.reduce((sum, input) => {
+    ? Array.from(markInputs).reduce((sum, input) => {
 
         const value = input.value.trim();
 
