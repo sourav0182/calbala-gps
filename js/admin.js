@@ -69,13 +69,13 @@ onAuthStateChanged(auth, async user => {
       return;
     }
 
-    /* Load all data */
+   /* Load all data */
 
-    loadAdminNotices();
-    loadStudents();
-    loadResultStudents();
-    loadDashboardCounts();
-
+loadAdminNotices();
+loadStudents();
+loadResultStudents();
+loadSavedResults();
+loadDashboardCounts();
   } catch (error) {
 
     console.error(error);
