@@ -1995,3 +1995,245 @@ document.addEventListener(
   }
 );
 }
+// ===============================
+// SAVED RESULT LIST
+// ===============================
+
+function loadSavedResults() {
+
+  const resultList =
+    document.getElementById("resultList");
+
+  const resultListCount =
+    document.getElementById("resultListCount");
+
+  if (!resultList) return;
+
+
+  const resultsQuery = query(
+    collection(db, "results"),
+    orderBy("createdAt", "desc")
+  );
+
+
+  onSnapshot(
+    resultsQuery,
+
+    (snapshot) => {
+
+      const results =
+        snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+
+
+      // মোট Result সংখ্যা
+      if (resultListCount) {
+
+        resultListCount.textContent =
+          `${results.length}টি`;
+
+      }
+
+
+      // কোনো Result নেই
+      if (!results.length) {
+
+        resultList.innerHTML = `
+          <p class="muted">
+            এখনো কোনো রেজাল্ট সংরক্ষণ করা হয়নি।
+          </p>
+        `;
+
+        return;
+      }
+
+
+      // Result Table
+      resultList.innerHTML = `
+
+        <div style="overflow-x:auto;">
+
+          <table class="student-table">
+
+            <thead>
+
+              <tr>
+
+                <th>রোল</th>
+
+                <th>শিক্ষার্থীর নাম</th>
+
+                <th>শ্রেণি</th>
+
+                <th>পরীক্ষা</th>
+
+                <th>মোট</th>
+
+                <th>গড়</th>
+
+                <th>GPA</th>
+
+                <th>অ্যাকশন</th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              ${results.map(result => `
+
+                <tr>
+
+                  <td>
+                    ${escapeHtml(
+                      String(result.roll || "-")
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${escapeHtml(
+                      result.studentName || "-"
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${escapeHtml(
+                      result.class || "-"
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${escapeHtml(
+                      result.examName || "-"
+                    )}
+                  </td>
+
+
+                  <td>
+                    ${result.total ?? 0}
+                  </td>
+
+
+                  <td>
+                    ${Number(
+                      result.average || 0
+                    ).toFixed(2)}
+                  </td>
+
+
+                  <td>
+                    <strong>
+                      ${Number(
+                        result.gpa || 0
+                      ).toFixed(2)}
+                    </strong>
+                  </td>
+
+
+                  <td>
+
+                    <button
+                      class="outline danger-text"
+                      data-result-delete="${result.id}">
+                      মুছুন
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              `).join("")}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      `;
+
+
+      // Delete buttons
+
+      document
+        .querySelectorAll(
+          "[data-result-delete]"
+        )
+        .forEach(button => {
+
+          button.onclick = () =>
+            deleteResult(
+              button.dataset.resultDelete
+            );
+
+        });
+
+    },
+
+
+    (error) => {
+
+      console.error(
+        "Saved results load error:",
+        error
+      );
+
+      resultList.innerHTML = `
+        <p>
+          ❌ রেজাল্ট লোড করা যাচ্ছে না।
+          ${escapeHtml(error.message)}
+        </p>
+      `;
+
+    }
+
+  );
+
+}
+
+
+// ===============================
+// DELETE RESULT
+// ===============================
+
+async function deleteResult(id) {
+
+  if (
+    !confirm(
+      "এই রেজাল্টটি স্থায়ীভাবে মুছে ফেলবেন?"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    await deleteDoc(
+      doc(db, "results", id)
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Result delete error:",
+      error
+    );
+
+    alert(
+      "রেজাল্ট মুছে ফেলা যায়নি: " +
+      error.message
+    );
+
+  }
+
+}
